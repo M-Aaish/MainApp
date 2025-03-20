@@ -6,3 +6,6 @@ threadpool
 matplotlib
 scipy
 pymixbox
+torch
+tqdm
+numba
