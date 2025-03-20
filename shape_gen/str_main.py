@@ -1,3 +1,13 @@
+import os
+import sys
+
+# Assuming geometrize.py is in the parent directory of the 'shape_gen' folder
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+from geometrize import geometrize_app
+
 import streamlit as st
 try:
     from streamlit.runtime.scriptrunner import RerunException, RerunData
@@ -5,7 +15,6 @@ except ImportError:
     RerunException = None
 from shape_art_generator import main_page as shape_art_generator_page
 from io import BytesIO
-from geometrize import geometrize_app
 from PIL import Image
 import numpy as np
 import cv2
@@ -14,7 +23,6 @@ from painterfun import oil_main  # Importing the oil_main function
 import mixbox
 import itertools
 import math
-import os
 from pathlib import Path
 
 # Set page config for the merged app.
