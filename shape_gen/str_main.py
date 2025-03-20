@@ -5,6 +5,7 @@ except ImportError:
     RerunException = None
 from shape_art_generator import main_page as shape_art_generator_page
 from io import BytesIO
+from geometrize import geometrize_app
 from PIL import Image
 import numpy as np
 import cv2
@@ -768,7 +769,8 @@ def main():
         "Colour Merger", 
         "Recipe Generator", 
         "Colors DataBase",
-        "Foogle Man Repo"  # <-- New page added here
+        "Foogle Man Repo",
+        "Paint & Geometrize"     # <-- New page added here
     ])
     
     if app_mode == "Image Generator":
@@ -785,6 +787,8 @@ def main():
         painter_colors_database()
     elif app_mode == "Foogle Man Repo":  # <-- New condition
         shape_art_generator_page()    
-
+    elif app_mode == "Paint & Geometrize":          # <-- New branch for Geometrize
+        geometrize_app()
+        
 if __name__ == "__main__":
     main()
