@@ -236,16 +236,13 @@ def refine_shape(base_img, target_img, shape, coarse_iter, fine_iter, coarse_sta
                                                        step_scale=0.5)
     return best_shape, best_diff
 
-def run_geometrize(target_img, shape_type, shape_count, resize_factor_width, resize_factor_height,
+# Updated run_geometrize to accept new width and height directly
+def run_geometrize(target_img, shape_type, shape_count, new_width, new_height,
                    coarse_iterations=1000, fine_iterations=500,
                    coarse_start_temp=100.0, coarse_end_temp=10.0,
                    fine_start_temp=10.0, fine_end_temp=1.0):
     target_img = target_img.convert("RGBA")
-    orig_w, orig_h = target_img.size
-    if resize_factor_width != 1.0 or resize_factor_height != 1.0:
-        new_w = int(orig_w * resize_factor_width)
-        new_h = int(orig_h * resize_factor_height)
-        target_img = target_img.resize((new_w, new_h), Image.LANCZOS)
+    target_img = target_img.resize((new_width, new_height), Image.LANCZOS)
     width, height = target_img.size
     current_img = Image.new("RGBA", (width, height), (255,255,255,255))
     current_diff = image_difference(target_img, current_img)
@@ -296,24 +293,18 @@ def geometrize_app():
         if oil_option:
             st.subheader("Oil-Painting Options")
             p_value = st.slider("Select parameter (--p)", min_value=1, max_value=10, value=4)
-            # Replace fixed resize with two separate sliders for width and height
-            oil_resize_factor_width = st.slider("Oil-Painting Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
-            oil_resize_factor_height = st.slider("Oil-Painting Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
-            # Display new dimensions based on oil painting resize factors
-            new_oil_w = int(orig_w * oil_resize_factor_width)
-            new_oil_h = int(orig_h * oil_resize_factor_height)
-            st.write(f"Oil-Painting New Dimensions: {new_oil_w} x {new_oil_h}")
+            # Manually enter new dimensions for Oil-Painting
+            oil_new_width = st.number_input("Oil-Painting New Width", value=orig_w, min_value=1, step=1)
+            oil_new_height = st.number_input("Oil-Painting New Height", value=orig_h, min_value=1, step=1)
+            st.write(f"Oil-Painting New Dimensions: {oil_new_width} x {oil_new_height}")
         if geom_option:
             st.subheader("Geometrize Options")
             shape_type = st.selectbox("Select shape type", ("triangle", "rectangle", "ellipse"))
             shape_count = st.number_input("Number of shapes", min_value=1, value=300, step=1)
-            # Two separate sliders for width and height resize factors for Geometrize
-            resize_factor_width = st.slider("Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
-            resize_factor_height = st.slider("Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
-            # Display new dimensions based on geometrize resize factors
-            new_geom_w = int(orig_w * resize_factor_width)
-            new_geom_h = int(orig_h * resize_factor_height)
-            st.write(f"Geometrize New Dimensions: {new_geom_w} x {new_geom_h}")
+            # Manually enter new dimensions for Geometrize
+            geom_new_width = st.number_input("Geometrize New Width", value=orig_w, min_value=1, step=1)
+            geom_new_height = st.number_input("Geometrize New Height", value=orig_h, min_value=1, step=1)
+            st.write(f"Geometrize New Dimensions: {geom_new_width} x {geom_new_height}")
         
         if st.button("Process Image"):
             results = {}
@@ -321,9 +312,7 @@ def geometrize_app():
             # Run Oil-Painting pipeline if selected
             if oil_option:
                 os.makedirs("uploads", exist_ok=True)
-                new_w = int(orig_w * oil_resize_factor_width)
-                new_h = int(orig_h * oil_resize_factor_height)
-                resized_img = input_img.resize((new_w, new_h))
+                resized_img = input_img.resize((oil_new_width, oil_new_height))
                 file_path = os.path.join("uploads", uploaded_file.name)
                 resized_img.save(file_path)
                 command = [sys.executable, "Oil-Painting.py", "--f", file_path, "--p", str(p_value)]
@@ -343,7 +332,7 @@ def geometrize_app():
             
             # Run Geometrize pipeline if selected
             if geom_option:
-                geom_img = run_geometrize(input_img, shape_type, shape_count, resize_factor_width, resize_factor_height)
+                geom_img = run_geometrize(input_img, shape_type, shape_count, geom_new_width, geom_new_height)
                 results["Geometrize"] = geom_img
             
             # Display results: side-by-side if both are processed, otherwise singly.
