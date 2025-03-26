@@ -299,6 +299,10 @@ def geometrize_app():
             # Replace fixed resize with two separate sliders for width and height
             oil_resize_factor_width = st.slider("Oil-Painting Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
             oil_resize_factor_height = st.slider("Oil-Painting Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
+            # Display new dimensions based on oil painting resize factors
+            new_oil_w = int(orig_w * oil_resize_factor_width)
+            new_oil_h = int(orig_h * oil_resize_factor_height)
+            st.write(f"Oil-Painting New Dimensions: {new_oil_w} x {new_oil_h}")
         if geom_option:
             st.subheader("Geometrize Options")
             shape_type = st.selectbox("Select shape type", ("triangle", "rectangle", "ellipse"))
@@ -306,6 +310,10 @@ def geometrize_app():
             # Two separate sliders for width and height resize factors for Geometrize
             resize_factor_width = st.slider("Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
             resize_factor_height = st.slider("Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
+            # Display new dimensions based on geometrize resize factors
+            new_geom_w = int(orig_w * resize_factor_width)
+            new_geom_h = int(orig_h * resize_factor_height)
+            st.write(f"Geometrize New Dimensions: {new_geom_w} x {new_geom_h}")
         
         if st.button("Process Image"):
             results = {}
@@ -313,7 +321,6 @@ def geometrize_app():
             # Run Oil-Painting pipeline if selected
             if oil_option:
                 os.makedirs("uploads", exist_ok=True)
-                orig_w, orig_h = input_img.size
                 new_w = int(orig_w * oil_resize_factor_width)
                 new_h = int(orig_h * oil_resize_factor_height)
                 resized_img = input_img.resize((new_w, new_h))
