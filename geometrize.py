@@ -236,15 +236,15 @@ def refine_shape(base_img, target_img, shape, coarse_iter, fine_iter, coarse_sta
                                                        step_scale=0.5)
     return best_shape, best_diff
 
-def run_geometrize(target_img, shape_type, shape_count, resize_factor,
+def run_geometrize(target_img, shape_type, shape_count, resize_factor_width, resize_factor_height,
                    coarse_iterations=1000, fine_iterations=500,
                    coarse_start_temp=100.0, coarse_end_temp=10.0,
                    fine_start_temp=10.0, fine_end_temp=1.0):
     target_img = target_img.convert("RGBA")
     orig_w, orig_h = target_img.size
-    if resize_factor != 1.0:
-        new_w = int(orig_w * resize_factor)
-        new_h = int(orig_h * resize_factor)
+    if resize_factor_width != 1.0 or resize_factor_height != 1.0:
+        new_w = int(orig_w * resize_factor_width)
+        new_h = int(orig_h * resize_factor_height)
         target_img = target_img.resize((new_w, new_h), Image.LANCZOS)
     width, height = target_img.size
     current_img = Image.new("RGBA", (width, height), (255,255,255,255))
@@ -284,6 +284,10 @@ def geometrize_app():
         input_img = Image.open(uploaded_file)
         st.image(input_img, caption="Input Image", use_column_width=True)
         
+        # Display original image dimensions
+        orig_w, orig_h = input_img.size
+        st.write(f"Original Dimensions: {orig_w} x {orig_h}")
+        
         # Checkboxes to select processing pipelines
         oil_option = st.checkbox("Run Oil-Painting")
         geom_option = st.checkbox("Run Geometrize")
@@ -296,7 +300,9 @@ def geometrize_app():
             st.subheader("Geometrize Options")
             shape_type = st.selectbox("Select shape type", ("triangle", "rectangle", "ellipse"))
             shape_count = st.number_input("Number of shapes", min_value=1, value=300, step=1)
-            resize_factor = st.slider("Resize factor (for Geometrize)", 0.25, 0.5, 0.5, step=0.01)
+            # Replace single resize factor slider with two separate sliders for width and height
+            resize_factor_width = st.slider("Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
+            resize_factor_height = st.slider("Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
         
         if st.button("Process Image"):
             results = {}
@@ -325,7 +331,7 @@ def geometrize_app():
             
             # Run Geometrize pipeline if selected
             if geom_option:
-                geom_img = run_geometrize(input_img, shape_type, shape_count, resize_factor)
+                geom_img = run_geometrize(input_img, shape_type, shape_count, resize_factor_width, resize_factor_height)
                 results["Geometrize"] = geom_img
             
             # Display results: side-by-side if both are processed, otherwise singly.
