@@ -296,11 +296,14 @@ def geometrize_app():
         if oil_option:
             st.subheader("Oil-Painting Options")
             p_value = st.slider("Select parameter (--p)", min_value=1, max_value=10, value=4)
+            # Replace fixed resize with two separate sliders for width and height
+            oil_resize_factor_width = st.slider("Oil-Painting Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
+            oil_resize_factor_height = st.slider("Oil-Painting Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
         if geom_option:
             st.subheader("Geometrize Options")
             shape_type = st.selectbox("Select shape type", ("triangle", "rectangle", "ellipse"))
             shape_count = st.number_input("Number of shapes", min_value=1, value=300, step=1)
-            # Replace single resize factor slider with two separate sliders for width and height
+            # Two separate sliders for width and height resize factors for Geometrize
             resize_factor_width = st.slider("Resize factor for width", 0.25, 1.0, 1.0, step=0.01)
             resize_factor_height = st.slider("Resize factor for height", 0.25, 1.0, 1.0, step=0.01)
         
@@ -310,8 +313,10 @@ def geometrize_app():
             # Run Oil-Painting pipeline if selected
             if oil_option:
                 os.makedirs("uploads", exist_ok=True)
-                # Resize input image to 256x256 for oil painting
-                resized_img = input_img.resize((256, 256))
+                orig_w, orig_h = input_img.size
+                new_w = int(orig_w * oil_resize_factor_width)
+                new_h = int(orig_h * oil_resize_factor_height)
+                resized_img = input_img.resize((new_w, new_h))
                 file_path = os.path.join("uploads", uploaded_file.name)
                 resized_img.save(file_path)
                 command = [sys.executable, "Oil-Painting.py", "--f", file_path, "--p", str(p_value)]
